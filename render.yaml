@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: chatbot-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: API_KEY
+        sync: false
