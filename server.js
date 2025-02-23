@@ -1,15 +1,16 @@
-require('dotenv').config(); // Load environment variables
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config(); // Loads API key from .env file
+const axios = require('axios'); // Import axios for API calls
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.API_KEY; // Load API key from environment variables
+const API_KEY = process.env.API_KEY; // Use your API Key
+const AI_API_URL = "https://openrouter.ai/api/v1/chat/completions"; // OpenRouter API
 
 app.use(cors());
 app.use(express.json());
 
-// Chatbot Route
 app.post('/chat', async (req, res) => {
     const userMessage = req.body.message;
     
@@ -17,18 +18,35 @@ app.post('/chat', async (req, res) => {
         return res.status(400).json({ error: 'No message provided' });
     }
 
-    // Simulated AI Response (Modify as Needed)
-    const aiResponse = `AI says: ${userMessage}`;
+    try {
+        // Make API request to OpenRouter or OpenAI
+        const response = await axios.post(AI_API_URL, {
+            model: "mistralai/mistral-7b-instruct:free", // Change model if needed
+            messages: [
+                { role: "system", content: "You are a helpful AI assistant." },
+                { role: "user", content: userMessage }
+            ]
+        }, {
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            }
+        });
 
-    res.json({ response: aiResponse });
+        const aiResponse = response.data.choices[0].message.content;
+
+        res.json({ response: aiResponse });
+
+    } catch (error) {
+        console.error("API Error:", error.response ? error.response.data : error.message);
+        res.status(500).json({ error: "Failed to get AI response" });
+    }
 });
 
-// Root Route for Health Check
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
 app.get("/", (req, res) => {
     res.send("Server is running!");
-});
-
-// Start Server
-app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
 });
