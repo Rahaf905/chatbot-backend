@@ -26,7 +26,8 @@ app.post('/chat', async (req, res) => {
             messages: [
                 { role: "system", content: "You are a helpful AI assistant." },
                 { role: "user", content: userMessage }
-            ]
+            ],
+            temperature: 0.7 // Add this line for better responses
         }, {
             headers: {
                 "Authorization": `Bearer ${API_KEY}`,
